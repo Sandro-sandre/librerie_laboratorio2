@@ -152,6 +152,7 @@ def grafico_fit(fit, x_coord, y_coord, sigma_y) :
 	plt.xlabel("x")
 	plt.ylabel("y")
 	plt.show()
+	return None
 	
 
 
