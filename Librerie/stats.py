@@ -3,10 +3,13 @@ import numpy as np
 import sys 
 from scipy.stats import norm, describe, expon
 
-def sturges(x): #per binnaggio
+# HISTOGRAM PLOT
+# Sturges per binnaggio
+def sturges(x): 
     return int(np.ceil(1 + 3.322 * np.log(x)))
 
-class lavoro : #classe che analizza la statistica di un sample
+# Classe che analizza la statistica di un sample
+class lavoro :
 	sample = []
 	N_events = 0
 	Sample_sum = 0
@@ -22,7 +25,7 @@ class lavoro : #classe che analizza la statistica di un sample
 	def media(self):
 		return self.Sample_sum /self.N_events
 	
-	def varianza2(self) :
+	def varianza_np(self) :
 		return np.var(self.sample)
 
 	def varianza(self):
@@ -32,7 +35,7 @@ class lavoro : #classe che analizza la statistica di un sample
 	def devst(self) :
 		return np.sqrt(self.varianza())
 			
-	def errore_standard(self) :
+	def errore_standard(self) : # della media
 		return self.devst()/np.sqrt(self.N_events)
 	
 	def skewness(self) :
@@ -43,32 +46,110 @@ class lavoro : #classe che analizza la statistica di un sample
 		moments = list(describe(self.sample))
 		return moments[5]
 		
-	def isto(self, output_file) :
+	def crea_hist(self, output_file) :
+		xMin = np.floor(np.min(self.sample))
+		xMax = np.ceil(np.max(self.sample))
 		N_bins = sturges(len(self.sample))
-		bin_edges = np.linspace(np.floor(np.min(self.sample)),np.ceil(np.max(self.sample)),N_bins)
-		print('lenghth of bid edges container:', len(bin_edges))
+		bin_edges = np.linspace(xMin, xMax, N_bins)
+		print('lenghth of bin_edges container:', len(bin_edges))
 		fig, ax = plt.subplots( nrows= 1, ncols=1)
-		ax.hist(self.sample, bins = bin_edges, label = 'Gaussian distribution', color = 'orange', density = False)
+		ax.hist(self.sample, bins = bin_edges, label = 'Gaussian distribution',
+			color = 'deepskyblue', density = False)
 		ax.set_xlabel('variable')
 		ax.set_ylabel('event coounts')
 		ax.legend()
 		plt.savefig(output_file)
-		
-	def dato(self) :
-		print("Dati distribuzione: \nMedia:", self.media(), "\nVarianza:", self.varianza(),"\nDeviazione standard:",self.devst(),"\nErrore standard della media:",self.errore_standard(),"\nSkewness:", self.skewness(),"\nKurtosis:", self.kurtosis())
+
+	# Altra versione (per disegnare istogrammi sovrapposti)
+   	 def crea_hist_v2 (self, ax=None, label='Histogram' ):
+		xMin = np.floor(np.min(self.sample))
+		xMax = np.ceil(np.max(self.sample))
+		N_bins = sturges(len(self.sample))
+        	bin_edges = np.linspace(xMin, xMax, N_bins)
+
+        	if ax is None:
+            		fig, ax = plt.subplots(nrows=1, ncols=1)
+		else:
+            		fig = None  # Non restituiamo una nuova figura se l'asse è passato
+
+        	ax.hist(self.sample, 
+            		bins=bin_edges,
+            		color=np.random.rand(3,),  # Cambia colore automaticamente
+            		density=True,
+            		alpha=0.6,
+            		label=label,
+            		histtype='step')
+
+        	ax.set_title('Histogram Comparison', size=14)
+        	ax.set_xlabel('boh')
+        	ax.set_ylabel('Density')
+        	ax.legend()
+    
+        	return fig, ax  # Restituiamo fig solo se creato qui
+	
+    	''' modo d'uso:
+		Q_sq_5 = library.lavoro( Q_squared_5)
+ 
+    		fig, ax = plt.subplots()
+
+    		Q_sq.crea_hist_v2(ax=ax, label='Gaussian Noise')
+    		Q_sq_5.crea_hist_v2(ax=ax, label='Uniform Noise')
+
+    		plt.show()
+		'''
+
+	def dati(self) :
+		print("Dati distribuzione: \nMedia:", self.media(),
+		      "\nVarianza:", self.varianza(),"\nDeviazione standard:",self.devst(),
+		      "\nErrore standard della media:",self.errore_standard(),"\nSkewness:",
+		      self.skewness(),"\nKurtosis:", self.kurtosis())
 		return "L'istogramma è stato aggiunto correttamente nella directory sottoforma di png"
 
+# PSEUDO-RANDOM NUMBERS
+# Funzione Try and Catch per generazione di un sample con una certa pdf
+# (se esiste pdf analitica meglio usare scipy)
+def rand_TAC(xmin, xmax, ymax, f, max_attempts=100000):  
+	attempts = 0
+	while attempts < max_attempts:
+        	x = np.random.uniform(xmin, xmax)
+        	y = np.random.uniform(0, ymax)
+        	if y <= f(x):
+			return x # Restituisce un valore, non un sample!
+		attempts += 1
+    	print('Maximum attempts reached')
+	return None
 
-def TAC(xmin, xmax, ymax, f, max_attempts=100000):  #funzione try and catch per generazione di un sample con una certa pdf(se esiste pdf analitica meglio usare scipy)
-    attempts = 0
-    while attempts < max_attempts:
-        x = np.random.uniform(xmin, xmax)
-        y = np.random.uniform(0, ymax)
-        if y <= f(x):
-            return x
-        attempts += 1
-    print('Maximum attempts reach')
-    return None
+# Generazione di un numero pseudo-casuale distribuito fra xMin ed xMax
+def rand_range (xMin, xMax) : 
+	return xMin + random.random () * (xMax - xMin)
+	
+# Generazione di un numero pseudo-casuale con il metodo del teorema centrale del limite su un intervallo fissato
+def rand_TCL (xMin, xMax, N_sum = 10) :
+	y = 0.
+	''' 
+	N_sum: Indica quante variabili casuali vengono sommate (o mediate) 
+	per ogni singolo numero generato. Più alto è N_sum, più il risultato
+	si avvicina a una distribuzione normale. Questo parametro controlla
+	quanto fortemente la distribuzione risultante si approssima a una Gaussiana. 
+ 	'''
+	for i in range (N_sum) : 
+		y = y + rand_range (xMin, xMax)
+	y /= N_sum 
+	return y 
+
+# Generazione di N numeri pseudo-casuali con il metodo del TCL, note media e sigma della gaussiana, a partire da un determinato seed
+def generate_TCL_ms (mean, sigma, N, N_sum = 10, seed = 0.) :	
+	#  N: Indica quanti numeri pseudo-casuali totali vengono generati,
+    	#  ossia la dimensione del campione prodotto.
+	if seed != 0. : random.seed (float (seed))
+   	 randlist = []
+    	delta = np.sqrt (3 * N_sum) * sigma
+    	xMin = mean - delta
+   	 xMax = mean + delta
+    	for i in range (N):
+        	# Return the next random floating point number in the range 0.0 <= X < 1.0
+        	randlist.append (rand_TCL (xMin, xMax, N_sum))
+    	return randlist
 
 
 
