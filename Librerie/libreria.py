@@ -92,7 +92,7 @@ def media_pesata(x, sigma) :
 
 
 def p_value(chi_square, x, ndof) :
-  s = 1-chi2.cdf(chi23, len(x)-ndof)
+  s = 1-chi2.cdf(chi_square, len(x)-ndof)
   r = s*100
   return r
     
