@@ -136,7 +136,7 @@ def t_test2(x1, x2, err1, err2) :
 	p_value = R*2
 	return p_value
 
-def grafico_fit(fit, x_coord, y_coord, sigma_y)
+def grafico_fit(fit, x_coord, y_coord, sigma_y) :
 	fit.migrad()
 	fit.hesse()
 	Q_squared = fit.fval
