@@ -24,7 +24,6 @@ def max1(f, xmin, xmax, prec=0.0001, max_attempts=10000): #(attenzione segni cam
     x1 = xmin + phi * (xmax - xmin)
     x2 = xmin + (1 - phi) * (xmax - xmin)
     i = 0
-    #log_likelihood_func = lambda theta: loglikelihood(theta, exp_pdf, randlist) (è un refuso? cancella)
     while abs(xmax - xmin) > prec and i < max_attempts:
         if f(x2) < f(x1):
             xmin = x2
@@ -38,8 +37,8 @@ def max1(f, xmin, xmax, prec=0.0001, max_attempts=10000): #(attenzione segni cam
     x_max = (x1 + x2) / 2
     return x_max, f(x_max)
 
-# Calcola integrale [Hit or Miss] (funzione positiva)
-def integral(f, xmin, xmax, ymin, ymax , N_evt) :  
+# Calcola integrale [Hit or Miss] 
+def integral_HoM(f, xmin, xmax, ymin, ymax , N_evt) :  
 	x_coord = np.random.uniform(xmin, xmax, N_evt)
 	y_coord = np.random.uniform(ymin, ymax, N_evt)
 	f_coord = f(x_coord)
