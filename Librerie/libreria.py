@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.integrate import quad, chi2, norm, t
+from scipy.integrate import quad
+from scipy.stats import chi2, norm, t
 import matplotlib.pyplot as plt
 from iminuit import Minuit
 
