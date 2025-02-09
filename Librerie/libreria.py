@@ -78,7 +78,14 @@ def loglikelihood (theta, pdf, lista) :
 # Gaussiana standardizzata 
 def Gaussian(x, mu = 0, sigma = 1) :
 	return (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((x - mu)**2) / (2 * sigma**2))
-  
+
+def Gaussian_cdf_ext(bin_edges, s, mu, sigma) :
+  return s*norm.cdf(bin_edges, mu, sigma)
+
+def Gaussian_cdf(bin_edges, mu, sigma) :
+  return norm.cdf(bin_edges, mu, sigma)
+
+
 	
 
 
