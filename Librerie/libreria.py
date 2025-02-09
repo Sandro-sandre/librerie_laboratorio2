@@ -1,5 +1,8 @@
 import numpy as np
 from scipy.integrate import quad, chi2, norm, t
+import matplotlib.pyplot as plt
+from iminuit import Minuit
+
 
 # ZEROS & EXTREMA 
 # Trova minimo [metodo Bisezione]
@@ -132,6 +135,26 @@ def t_test2(x1, x2, err1, err2) :
 	R = t.cdf(-t, df=len(x1)-1)
 	p_value = R*2
 	return p_value
+
+def grafico_fit(fit, x_coord, y_coord, sigma_y)
+	fit.migrad()
+	fit.hesse()
+	Q_squared = fit.fval
+	N_dof = fit.ndof
+	print('success of the fit:' , fit.valid)
+	plt.errorbar(x_coord, y_coord, sigma_y, fmt="ok", label="data")
+	plt.plot(x_coord, f(x_coord, *fit.values), label="fit")
+	fit_info = [
+    f"$\\chi^2$/$n_\\mathrm{{dof}}$ = {fit.fval:.1f} / {fit.ndof:.0f} = {fit.fmin.reduced_chi2:.1f}",
+]
+	for p, v, e in zip(fit.parameters, fit.values, fit.errors):
+		fit_info.append(f"{p} = ${v:.3f} \\pm {e:.3f}$")
+
+	plt.legend(title="\n".join(fit_info), frameon=False)
+	plt.xlabel("x")
+	plt.ylabel("y")
+	plt.show()
+	
 	
 
 
