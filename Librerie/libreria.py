@@ -85,6 +85,12 @@ def Gaussian_cdf_ext(bin_edges, s, mu, sigma) :
 def Gaussian_cdf(bin_edges, mu, sigma) :
   return norm.cdf(bin_edges, mu, sigma)
 
+def media_pesata(x, sigma) :
+  m = np.sum(x/sigma**2)/np.sum(1/sigma**2)
+  sigma_m = 1/np.sqrt(np.sum(1/sigma**2))
+  return m, sigma_m
+
+
 
 	
 
