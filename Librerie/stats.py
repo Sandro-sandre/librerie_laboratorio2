@@ -121,7 +121,7 @@ def rand_TAC(xmin, xmax, ymax, f, max_attempts=100000):
 
 # Generazione di un numero pseudo-casuale distribuito fra xMin ed xMax
 def rand_range (xMin, xMax) : 
-	return xMin + random.random () * (xMax - xMin)
+	return xMin + np.random.uniform () * (xMax - xMin)
 	
 # Generazione di un numero pseudo-casuale con il metodo del teorema centrale del limite su un intervallo fissato
 def rand_TCL (xMin, xMax, N_sum = 10) :
