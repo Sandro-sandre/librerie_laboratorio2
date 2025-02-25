@@ -13,12 +13,14 @@ def error_propagation(formula, variables, errors, values):
     sym_variables = [symbols(var) for var in variables]
     expr = sympify(formula)
     partial_derivates = [diff(expr, var) for var in sym_variables]
-    partial_derivates_num = [deriv.subs(var, value) for deriv, var, value in zip(partial_derivates,variables, values)]
+    partial_derivates_num = [deriv.subs(zip(sym_variables, values)) for deriv in partial_derivates]
+
     error_squared_formula= sum((deriv*error)**2 for deriv, error in zip(partial_derivates, errors))
     errore_propagato_formula = sqrt(error_squared_formula)
+
     error_squared_num = sum((deriv*error)**2 for deriv, error in zip(partial_derivates_num, errors))
     errore_propagato_num = sqrt(error_squared_num)
-    return errore_propagato_formula.evalf(4), errore_propagato_num.evalf(4)
+    return errore_propagato_formula, errore_propagato_num.evalf(4)
 
 def main():
     '''
