@@ -14,7 +14,7 @@ def error_propagation(formula, variables, errors):
     expr = sympify(formula)
     partial_derivates = [diff(expr, var) for var in sym_variables]
     
-    error_squared = np.sum((deriv*error)**2 for deriv, error in zip(partial_derivates, errors))
+    error_squared = sum((deriv*error)**2 for deriv, error in zip(partial_derivates, errors))
     errore_propagato = sqrt(error_squared)
     return errore_propagato.evalf(4)
 
