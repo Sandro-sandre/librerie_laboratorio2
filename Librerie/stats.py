@@ -47,7 +47,7 @@ class lavoro :
 		moments = list(describe(self.sample))
 		return moments[5]
 		
-	def crea_hist(self, output_file) :
+	def crea_hist(self) :
 		xMin = np.floor(np.min(self.sample))
 		xMax = np.ceil(np.max(self.sample))
 		N_bins = sturges(len(self.sample))
@@ -59,7 +59,7 @@ class lavoro :
 		ax.set_xlabel('variable')
 		ax.set_ylabel('event coounts')
 		ax.legend()
-		plt.savefig(output_file)
+		plt.show()
 
 
 	def dati(self) :
