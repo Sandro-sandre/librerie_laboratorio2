@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys 
 from scipy.stats import norm, describe, expon
+import random
 
 # HISTOGRAM PLOT
 # Sturges per binnaggio
@@ -60,43 +61,6 @@ class lavoro :
 		ax.legend()
 		plt.savefig(output_file)
 
-	# Altra versione (per disegnare istogrammi sovrapposti)
-   	 def crea_hist_v2 (self, ax=None, label='Histogram' ):
-		xMin = np.floor(np.min(self.sample))
-		xMax = np.ceil(np.max(self.sample))
-		N_bins = sturges(len(self.sample))
-        	bin_edges = np.linspace(xMin, xMax, N_bins)
-
-        	if ax is None:
-            		fig, ax = plt.subplots(nrows=1, ncols=1)
-		else:
-            		fig = None  # Non restituiamo una nuova figura se l'asse è passato
-
-        	ax.hist(self.sample, 
-            		bins=bin_edges,
-            		color=np.random.rand(3,),  # Cambia colore automaticamente
-            		density=True,
-            		alpha=0.6,
-            		label=label,
-            		histtype='step')
-
-        	ax.set_title('Histogram Comparison', size=14)
-        	ax.set_xlabel('boh')
-        	ax.set_ylabel('Density')
-        	ax.legend()
-    
-        	return fig, ax  # Restituiamo fig solo se creato qui
-	
-    	''' modo d'uso:
-		Q_sq_5 = library.lavoro( Q_squared_5)
- 
-    		fig, ax = plt.subplots()
-
-    		Q_sq.crea_hist_v2(ax=ax, label='Gaussian Noise')
-    		Q_sq_5.crea_hist_v2(ax=ax, label='Uniform Noise')
-
-    		plt.show()
-		'''
 
 	def dati(self) :
 		print("Dati distribuzione: \nMedia:", self.media(),
@@ -108,17 +72,19 @@ class lavoro :
 # PSEUDO-RANDOM NUMBERS
 # Funzione Try and Catch per generazione di un sample con una certa pdf
 # (se esiste pdf analitica meglio usare scipy)
-def rand_TAC(xmin, xmax, ymax, f, max_attempts=100000):  
-	attempts = 0
-	while attempts < max_attempts:
-        	x = np.random.uniform(xmin, xmax)
-        	y = np.random.uniform(0, ymax)
-        	if y <= f(x):
-			return x # Restituisce un valore, non un sample!
-		attempts += 1
-    	print('Maximum attempts reached')
-	return None
+def rand_TAC(xmin, xmax, ymax, f, max_attempts=100000):
+    attempts = 0
+    while attempts < max_attempts:
+        x = np.random.uniform(xmin, xmax)
+        y = np.random.uniform(0, ymax)
+        if y <= f(x):
+            return x  # Restituisce un valore, non un sample!
+        attempts += 1
+    print('Maximum attempts reached')
+    return None
 
+
+	
 # Generazione di un numero pseudo-casuale distribuito fra xMin ed xMax
 def rand_range (xMin, xMax) : 
 	return xMin + np.random.uniform () * (xMax - xMin)
@@ -140,16 +106,16 @@ def rand_TCL (xMin, xMax, N_sum = 10) :
 # Generazione di N numeri pseudo-casuali con il metodo del TCL, note media e sigma della gaussiana, a partire da un determinato seed
 def generate_TCL_ms (mean, sigma, N, N_sum = 10, seed = 0.) :	
 	#  N: Indica quanti numeri pseudo-casuali totali vengono generati,
-    	#  ossia la dimensione del campione prodotto.
+    #  ossia la dimensione del campione prodotto.
 	if seed != 0. : random.seed (float (seed))
-   	 randlist = []
-    	delta = np.sqrt (3 * N_sum) * sigma
-    	xMin = mean - delta
-   	 xMax = mean + delta
-    	for i in range (N):
+	randlist = []
+	delta = np.sqrt (3 * N_sum) * sigma
+	xMin = mean - delta
+	xMax = mean + delta
+	for i in range (N):
         	# Return the next random floating point number in the range 0.0 <= X < 1.0
-        	randlist.append (rand_TCL (xMin, xMax, N_sum))
-    	return randlist
+		randlist.append (rand_TCL (xMin, xMax, N_sum))
+	return randlist
 
 
 
