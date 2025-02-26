@@ -5,6 +5,7 @@ from iminuit.cost import LeastSquares
 from scipy.stats import chi2
 import math
 from IPython.display import display
+import sys
 
 
 def model(x, params, formula):
@@ -26,6 +27,10 @@ formula_input = input("Inserisci la formula (usa 'x' come variabile e 'a0', 'a1'
 x_data = np.array([float(xi) for xi in input("Inserisci i valori di x separati da spazi: ").split()])
 y_data = np.array([float(yi) for yi in input("Inserisci i valori di y separati da spazi: ").split()])
 sigma_y = np.array([float(sigmai) for sigmai in input("Inserisci le incertezze sigma_y separati da spazi: ").split()])
+if  len(x_data)!=len(y_data) or len(y_data) != len(sigma_y):
+    print("Gli array inseriti devono essere della stessa lunghezza coglione")
+    sys.exit(1)
+    
 
 
 param_names = input("Inserisci i nomi dei parametri separati da spazi (es. 'a0 a1 a2'): ").split()
