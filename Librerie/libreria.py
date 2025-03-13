@@ -138,13 +138,13 @@ def t_test2(x1, x2, err1, err2) :
 	return p_value
 
 
-def grafico_fit(fit, x_coord, y_coord, sigma_y, f) :
+def grafico_fit(fit, x_coord, y_coord, sigma_x, sigma_y, f) :
     fit.migrad()
     fit.hesse()
     Q_squared = fit.fval
     N_dof = fit.ndof
     print('Success of the fit:', fit.valid)
-    plt.errorbar(x_coord, y_coord, sigma_y, fmt="ok", label="data")
+    plt.errorbar(x_coord, y_coord, xerr= sigma_x, yerr = sigma_y, fmt="ok", label="data")
     plt.plot(x_coord, f(x_coord, *fit.values), label="fit")
     fit_info = [f"$\\chi^2$/$n_\\mathrm{{dof}}$ = {fit.fval:.1f} / {fit.ndof:.0f} = {fit.fmin.reduced_chi2:.1f}"]
     for p, v, e in zip(fit.parameters, fit.values, fit.errors):
