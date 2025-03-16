@@ -150,9 +150,9 @@ def grafico_fit(fit, x_coord, y_coord, sigma_x, sigma_y, f) :
     for p, v, e in zip(fit.parameters, fit.values, fit.errors):
         fit_info.append(f"{p} = ${v:.3f} \\pm {e:.3f}$")
     plt.legend(title="\n".join(fit_info), frameon=False)
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.show()
+    #plt.xlabel("x")
+    #plt.ylabel("y")
+    #plt.show()
 	
 	
 
