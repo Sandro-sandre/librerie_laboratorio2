@@ -125,15 +125,15 @@ def z_test2(x1,X,s) :
 
 # t test con 1 vincolo
 def t_test1(x1, X, N, err_media) : # N = N_dati 
-	t = np.absolute(x1-X)/err_media
-	R = t.cdf(-t, df=N-1)
+	t_test = np.absolute(x1-X)/err_media
+	R = t.cdf(-t_test, df=N-1)
 	p_value = R*2
 	return p_value
 	
 # t test con 2 vincoli
 def t_test2(x1, x2, N, err1, err2) : 
-	t = np.absolute(x1-x2)/np.sqrt(err1**2+err2**2)
-	R = t.cdf(-t, df = N-1)
+	t_test = np.absolute(x1-x2)/np.sqrt(err1**2+err2**2)
+	R = t.cdf(-t_test, df = N-1)
 	p_value = R*2
 	return p_value
 
