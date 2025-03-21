@@ -104,8 +104,8 @@ def Gaussian_cdf(bin_edges, mu, sigma) :
 
 
 # HYPOTHESIS TESTING 
-def p_value(chi_square, x, ndof) :
-  s = 1-chi2.cdf(chi_square, len(x)-ndof)
+def p_value(chi_square, ndof) :
+  s = 1-chi2.cdf(chi_square, ndof)
   r = s*100
   return r
 
