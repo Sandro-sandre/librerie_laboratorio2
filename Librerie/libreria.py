@@ -112,14 +112,14 @@ def p_value(chi_square, ndof) :
 # z_test double sided
 def z_test1(x1,x2,s1,s2) : 
   z = np.absolute(x1-x2)/np.sqrt(s1**2+s2**2)  #t di confronto
-  R = quad(Gaussian_standard,-t,t) #calcolo del rapporto con l'integrale
+  R = quad(Gaussian_standard,-z,z) #calcolo del rapporto con l'integrale
   p_value = (1 - R[0])
   return p_value
 
 # z test di ipotesi con un valore calcolato
 def z_test2(x1,X,s) :  
   z = np.absolute(x1-X)/s  #t di confronto
-  R = quad(Gaussian_standard,-t,t) #calcolo del rapporto con l'integrale
+  R = quad(Gaussian_standard,-z,z) #calcolo del rapporto con l'integrale
   p_value = (1 - R[0])
   return p_value
 
