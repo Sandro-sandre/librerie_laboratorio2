@@ -147,7 +147,7 @@ def grafico_fit(fit, x_coord, y_coord, sigma_x, sigma_y, f) :
     print('Success of the fit:', fit.valid)
     plt.errorbar(x_coord, y_coord, xerr= sigma_x, yerr = sigma_y, fmt="ok", label="data")
     x = np.linspace(min(x_coord), max(x_coord), 10000)
-    plt.plot(x, f(x_coord, *fit.values), label="fit")
+    plt.plot(x, f(x, *fit.values), label="fit")
     fit_info = [f"$\\chi^2$/$n_\\mathrm{{dof}}$ = {fit.fval:.1f} / {fit.ndof:.0f} = {fit.fval/fit.ndof:.1f}",
     f"$p$-value = {p_val:.3f}"]
     for p, v, e in zip(fit.parameters, fit.values, fit.errors):
