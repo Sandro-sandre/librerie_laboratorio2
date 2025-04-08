@@ -7,6 +7,7 @@ from scipy.odr import RealData, Model, ODR
 from typing import Union, List, Dict, Callable, Optional, Tuple
 from scipy.integrate import quad
 from scipy.stats import chi2, t, norm
+from jacobi import propagate
 
 
 
@@ -107,7 +108,6 @@ def plot_fit(
     legend_loc: str = 'best',
     fit_points: int = 1000,
     fit_range: Optional[Tuple[float, float]] = None,
-    confidence_interval: Optional[float] = None,
     residuals: bool = False,
     fmt: str = '+',
     markersize: int = 6,
@@ -134,9 +134,6 @@ def plot_fit(
     if fit_line:
         ax1.plot(fit_x, fit_y, color='red', linewidth=linewidth, label='Fit')
 
-        if confidence_interval:
-            ci = confidence_interval * np.sqrt(np.diag(result['covariance']))
-            ax1.fill_between(fit_x, fit_y - ci, fit_y + ci, color='red', alpha=0.2)
 
     # Calcolo gradi di libertà e p-value
     ndof = len(x) - len(result['parameters'])
