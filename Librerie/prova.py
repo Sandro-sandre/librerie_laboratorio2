@@ -26,3 +26,5 @@ sigma_ddp_RC = (2*np.ones(len(ddp_RC))*0.05)/np.sqrt(12)
 result = lib.fit(t_RC, ddp_RC, VR_C_charge, yerr=sigma_ddp_RC, p0=[1,1], parameter_names=['tau', 'V_0'])
 print(result)
 print(result['residuals'])
+
+lib.plot_fit(t_RC, ddp_RC, yerr = sigma_ddp_RC, func = VR_C_charge, p0= [1,1], xlabel = 'tempo(s)',ylabel = 'volt', title= 'Fit carica RC' , residuals = True, parameter_names=['tau', 'V_0'], show_fit_params=True, show_chi_squared=True)

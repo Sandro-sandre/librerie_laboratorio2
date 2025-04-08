@@ -4,7 +4,7 @@ import sympy as sp
 import scipy.stats as stats
 from scipy.optimize import curve_fit
 from scipy.odr import RealData, Model, ODR
-from typing import Union, List, Dict, Callable, Optional
+from typing import Union, List, Dict, Callable, Optional, Tuple
 from scipy.integrate import quad
 from scipy.stats import chi2, t, norm
 
@@ -88,205 +88,103 @@ def fit(x: np.ndarray,
     return result
 
 #------------grafico fit----------------
+
 def plot_fit(
-    *args: Dict, 
-    func: Callable, 
-    p0: Optional[Union[List[float], List[List[float]]]] = None, 
-    xlabel: str = '', 
-    ylabel: str = '', 
-    title: str = '', 
-    colors: Optional[List[str]] = None, 
-    labels: Optional[List[str]] = None, 
-    fit_line: bool = True, 
-    label_fit: Optional[List[str]] = None, 
-    together: bool = True, 
-    figsize: tuple = (10, 6), 
-    save_path: Optional[str] = None, 
-    dpi: int = 300, 
-    grid: bool = False, 
-    legend_loc: str = 'best', 
-    fit_points: int = 1000, 
-    fit_range: Optional[tuple] = None, 
-    confidence_interval: Optional[float] = None, 
-    residuals: bool = False, 
-    fmt: str = '+', 
-    markersize: int = 6, 
-    linewidth: float = 1.5, 
-    show_fit_params: bool = False, 
-    show_chi_squared: bool = False, 
-    xlim: Optional[tuple] = None, 
-    ylim: Optional[tuple] = None, 
-    capsize: float = 3, 
-    axis_fontsize: int = 12, 
-    title_fontsize: int = 14, 
-    masks: Optional[List[np.ndarray]] = None, 
-    parameter_names: Optional[List[List[str]]] = None, 
-    method: str = 'auto', 
-    show_masked_points: bool = True, 
-    masked_fmt: str = 'x', 
-    masked_color: Optional[str] = None, 
-    masked_alpha: float = 0.5
+    x: np.ndarray,
+    y: np.ndarray,
+    xerr: Optional[np.ndarray] = None,
+    yerr: Optional[np.ndarray] = None,
+    func: Callable = None,
+    p0: Optional[List[float]] = None,
+    xlabel: str = '',
+    ylabel: str = '',
+    title: str = '',
+    fit_line: bool = True,
+    figsize: Tuple[int, int] = (10, 6),
+    save_path: Optional[str] = None,
+    dpi: int = 300,
+    grid: bool = False,
+    legend_loc: str = 'best',
+    fit_points: int = 1000,
+    fit_range: Optional[Tuple[float, float]] = None,
+    confidence_interval: Optional[float] = None,
+    residuals: bool = False,
+    fmt: str = '+',
+    markersize: int = 6,
+    linewidth: float = 1.5,
+    show_fit_params: bool = True,
+    show_chi_squared: bool = True,
+    xlim: Optional[Tuple[float, float]] = None,
+    ylim: Optional[Tuple[float, float]] = None,
+    capsize: float = 3,
+    axis_fontsize: int = 12,
+    title_fontsize: int = 14,
+    parameter_names: Optional[List[str]] = None,
+    method: str = 'auto'
 ):
-    if together:
-        plt.figure(figsize=figsize)
+    result = fit(x, y, func, xerr=xerr, yerr=yerr, p0=p0, method=method, parameter_names=parameter_names)
 
-        if residuals:
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=figsize, gridspec_kw={'height_ratios': [3, 1]})
-        else:
-            fig, ax1 = plt.subplots(figsize=figsize)
+    fig, ax1 = plt.subplots(figsize=figsize)
 
-        for i, dataset in enumerate(args):
-            x = np.array(dataset['x']['value'])
-            y = np.array(dataset['y']['value'])
-            xerr = np.array(dataset['x']['error']) if 'error' in dataset['x'] else None
-            yerr = np.array(dataset['y']['error']) if 'error' in dataset['y'] else None
+    ax1.errorbar(x, y, xerr=xerr, yerr=yerr, fmt=fmt, markersize=markersize, capsize=capsize, label="Dati")
 
-            mask = masks[i] if masks and i < len(masks) else np.ones_like(x, dtype=bool)
-            x_fit, y_fit = x[mask], y[mask]
-            xerr_fit = xerr[mask] if xerr is not None else None
-            yerr_fit = yerr[mask] if yerr is not None else None
+    fit_x = np.linspace(fit_range[0], fit_range[1], fit_points) if fit_range else np.linspace(min(x), max(x), fit_points)
+    fit_y = func(fit_x, *result['parameters'])
 
-            initial_p0 = p0[i] if isinstance(p0, list) and len(p0) > i else p0
-            fit_result = fit(x_fit, y_fit, func, xerr=xerr_fit, yerr=yerr_fit, p0=initial_p0, method=method, parameter_names=parameter_names[i] if parameter_names else None)
+    if fit_line:
+        ax1.plot(fit_x, fit_y, color='red', linewidth=linewidth, label='Fit')
 
-            color = colors[i] if colors and i < len(colors) else None
-            label = labels[i] if labels and i < len(labels) else None
-            ax1.errorbar(x, y, xerr=xerr, yerr=yerr, fmt=fmt, markersize=markersize, label=label, color=color, capsize=capsize)
-            if show_masked_points and not np.all(mask):
-                masked_color = masked_color or color
-                ax1.errorbar(x[~mask], y[~mask], xerr=xerr[~mask] if xerr is not None else None, yerr=yerr[~mask] if yerr is not None else None, fmt=masked_fmt, markersize=markersize, color=masked_color, alpha=masked_alpha, capsize=capsize)
+        if confidence_interval:
+            ci = confidence_interval * np.sqrt(np.diag(result['covariance']))
+            ax1.fill_between(fit_x, fit_y - ci, fit_y + ci, color='red', alpha=0.2)
 
-            if fit_line:
-                fit_x = np.linspace(fit_range[0], fit_range[1], fit_points) if fit_range else np.linspace(min(x_fit), max(x_fit), fit_points)
-                fit_y = func(fit_x, *fit_result['parameters'])
-                ax1.plot(fit_x, fit_y, color=color, linewidth=linewidth, label=label_fit[i] if label_fit and i < len(label_fit) else None)
+    # Calcolo gradi di libertà e p-value
+    ndof = len(x) - len(result['parameters'])
+    chi2_red = result['chi2'] / ndof if result['chi2'] is not None else None
+    p_val = p_value(result['chi2'], ndof) if result['chi2'] is not None else None
 
-                if confidence_interval:
-                    ci = confidence_interval * np.sqrt(np.diag(fit_result['covariance']))
-                    ax1.fill_between(fit_x, fit_y - ci, fit_y + ci, color=color, alpha=0.2)
+    # Costruzione legenda con i parametri
+    fit_info = []
+    if show_chi_squared and result['chi2'] is not None:
+        fit_info.append(f"$\\chi^2$/$n_\\mathrm{{dof}}$ = {result['chi2']:.1f} / {ndof} = {chi2_red:.2f}")
+        fit_info.append(f"$p$-value = {p_val:.3f}")
+    
+    if show_fit_params:
+        for i, val in enumerate(result['parameters']):
+            err = np.sqrt(result['covariance'][i][i]) if result['covariance'] is not None else 0
+            name = parameter_names[i] if parameter_names else f"p{i}"
+            fit_info.append(f"{name} = ${val:.3f} \\pm {err:.3f}$")
 
-            if show_fit_params:
-                param_text = '\n'.join([f'{name} = {val:.3f}' for name, val in zip(parameter_names[i], fit_result['parameters'])]) if parameter_names else '\n'.join([f'p{i} = {val:.3f}' for i, val in enumerate(fit_result['parameters'])])
-                ax1.text(0.05, 0.95, param_text, transform=ax1.transAxes, fontsize=axis_fontsize, verticalalignment='top')
+    ax1.legend(title="\n".join(fit_info), frameon=False, loc=legend_loc)
 
-            if show_chi_squared and fit_result['chi2'] is not None:
-                ax1.text(0.05, 0.85, f'Chi2 = {fit_result["chi2"]:.3f}', transform=ax1.transAxes, fontsize=axis_fontsize, verticalalignment='top')
+    ax1.set_xlabel(xlabel, fontsize=axis_fontsize)
+    ax1.set_ylabel(ylabel, fontsize=axis_fontsize)
+    ax1.set_title(title, fontsize=title_fontsize)
+    ax1.grid(grid)
 
-            if residuals:
-                residuals = y - func(x, *fit_result['parameters'])
-                ax2.errorbar(x, residuals, xerr=xerr, yerr=yerr, fmt=fmt, markersize=markersize, color=color, capsize=capsize)
-                ax2.axhline(0, color='black', linewidth=linewidth, linestyle='--')
-                ax2.set_xlabel(xlabel, fontsize=axis_fontsize)
-                ax2.set_ylabel('Residuals', fontsize=axis_fontsize)
-            ax1.errorbar(x, y, xerr=xerr, yerr=yerr, fmt=fmt, markersize=markersize, label=label, color=color, capsize=capsize)
-            if show_masked_points and not np.all(mask):
-                masked_color = masked_color or color
-                ax1.errorbar(x[~mask], y[~mask], xerr=xerr[~mask] if xerr is not None else None, yerr=yerr[~mask] if yerr is not None else None, fmt=masked_fmt, markersize=markersize, color=masked_color, alpha=masked_alpha, capsize=capsize)
+    if xlim:
+        ax1.set_xlim(xlim)
+    if ylim:
+        ax1.set_ylim(ylim)
 
-            if fit_line:
-                fit_x = np.linspace(fit_range[0], fit_range[1], fit_points) if fit_range else np.linspace(min(x_fit), max(x_fit), fit_points)
-                fit_y = func(fit_x, *fit_result['parameters'])
-                ax1.plot(fit_x, fit_y, color=color, linewidth=linewidth, label=label_fit[i] if label_fit and i < len(label_fit) else None)
-
-            if confidence_interval:
-                ci = confidence_interval * np.sqrt(np.diag(fit_result['covariance']))
-                ax1.fill_between(fit_x, fit_y - ci, fit_y + ci, color=color, alpha=0.2)
-
-            if show_fit_params:
-                param_text = '\n'.join([f'{name} = {val:.3f}' for name, val in zip(parameter_names[i], fit_result['parameters'])]) if parameter_names else '\n'.join([f'p{i} = {val:.3f}' for i, val in enumerate(fit_result['parameters'])])
-                ax1.text(0.05, 0.95, param_text, transform=ax1.transAxes, fontsize=axis_fontsize, verticalalignment='top')
-
-            if show_chi_squared and fit_result['chi2'] is not None:
-                ax1.text(0.05, 0.85, f'Chi2 = {fit_result["chi2"]:.3f}', transform=ax1.transAxes, fontsize=axis_fontsize, verticalalignment='top')
-
-            if residuals:
-                residuals = y - func(x, *fit_result['parameters'])
-                ax2.errorbar(x, residuals, xerr=xerr, yerr=yerr, fmt=fmt, markersize=markersize, color=color, capsize=capsize)
-                ax2.axhline(0, color='black', linewidth=linewidth, linestyle='--')
-                ax2.set_xlabel(xlabel, fontsize=axis_fontsize)
-                ax2.set_ylabel('Residuals', fontsize=axis_fontsize)
-
-        ax1.set_xlabel(xlabel, fontsize=axis_fontsize)
-        ax1.set_ylabel(ylabel, fontsize=axis_fontsize)
-        ax1.set_title(title, fontsize=title_fontsize)
-        ax1.grid(grid)
-        ax1.legend(loc=legend_loc)
-        if xlim:
-            ax1.set_xlim(xlim)
-        if ylim:
-            ax1.set_ylim(ylim)
+    if residuals:
+        residual = result['residuals']
+        fig_res, ax2 = plt.subplots(figsize=(figsize[0], figsize[1] / 2))
+        ax2.errorbar(x, residual, xerr=xerr, yerr=yerr, fmt=fmt, color='black', markersize=markersize, capsize=capsize)
+        ax2.axhline(0, color='gray', linestyle='--')
+        ax2.set_xlabel(xlabel, fontsize=axis_fontsize)
+        ax2.set_ylabel("Residui", fontsize=axis_fontsize)
+        ax2.grid(grid)
         if save_path:
-            plt.savefig(save_path, dpi=dpi)
+            fig_res.savefig(f"{save_path}_residui.png", dpi=dpi)
         plt.show()
 
-    for i, dataset in enumerate(args):
-        x = np.array(dataset['x']['value'])
-        y = np.array(dataset['y']['value'])
-        xerr = np.array(dataset['x']['error']) if 'error' in dataset['x'] else None
-        yerr = np.array(dataset['y']['error']) if 'error' in dataset['y'] else None
+    if save_path:
+        fig.savefig(f"{save_path}.png", dpi=dpi)
 
-        mask = masks[i] if masks and i < len(masks) else np.ones_like(x, dtype=bool)
-        x_fit, y_fit = x[mask], y[mask]
-        xerr_fit = xerr[mask] if xerr is not None else None
-        yerr_fit = yerr[mask] if yerr is not None else None
+    plt.show()
 
-        initial_p0 = p0[i] if isinstance(p0, list) and len(p0) > i else p0
-        fit_result = fit(x_fit, y_fit, func, xerr=xerr_fit, yerr=yerr_fit, p0=initial_p0, method=method, parameter_names=parameter_names[i] if parameter_names else None)
 
-        if not together:
-            plt.figure(figsize=figsize)
-
-        color = colors[i] if colors and i < len(colors) else None
-        label = labels[i] if labels and i < len(labels) else None
-
-        plt.errorbar(x, y, xerr=xerr, yerr=yerr, fmt=fmt, markersize=markersize, label=label, color=color, capsize=capsize)
-        if show_masked_points and not np.all(mask):
-            masked_color = masked_color or color
-            plt.errorbar(x[~mask], y[~mask], xerr=xerr[~mask] if xerr is not None else None, yerr=yerr[~mask] if yerr is not None else None, fmt=masked_fmt, markersize=markersize, color=masked_color, alpha=masked_alpha, capsize=capsize)
-
-        if fit_line:
-            fit_x = np.linspace(fit_range[0], fit_range[1], fit_points) if fit_range else np.linspace(min(x_fit), max(x_fit), fit_points)
-            fit_y = func(fit_x, *fit_result['parameters'])
-            plt.plot(fit_x, fit_y, color=color, linewidth=linewidth, label=label_fit[i] if label_fit and i < len(label_fit) else None)
-
-            if confidence_interval:
-                ci = confidence_interval * np.sqrt(np.diag(fit_result['covariance']))
-                plt.fill_between(fit_x, fit_y - ci, fit_y + ci, color=color, alpha=0.2)
-
-        if show_fit_params:
-            param_text = '\n'.join([f'{name} = {val:.3f}' for name, val in zip(parameter_names[i], fit_result['parameters'])]) if parameter_names else '\n'.join([f'p{i} = {val:.3f}' for i, val in enumerate(fit_result['parameters'])])
-            plt.text(0.05, 0.95, param_text, transform=plt.gca().transAxes, fontsize=axis_fontsize, verticalalignment='top')
-
-        if show_chi_squared and fit_result['chi2'] is not None:
-            plt.text(0.05, 0.85, f'Chi2 = {fit_result["chi2"]:.3f}', transform=plt.gca().transAxes, fontsize=axis_fontsize, verticalalignment='top')
-
-        if not together:
-            plt.xlabel(xlabel, fontsize=axis_fontsize)
-            plt.ylabel(ylabel, fontsize=axis_fontsize)
-            plt.title(title, fontsize=title_fontsize)
-            plt.grid(grid)
-            plt.legend(loc=legend_loc)
-            if xlim:
-                plt.xlim(xlim)
-            if ylim:
-                plt.ylim(ylim)
-            if save_path:
-                plt.savefig(f'{save_path}_dataset_{i}.png', dpi=dpi)
-            plt.show()
-
-    if together:
-        plt.xlabel(xlabel, fontsize=axis_fontsize)
-        plt.ylabel(ylabel, fontsize=axis_fontsize)
-        plt.title(title, fontsize=title_fontsize)
-        plt.grid(grid)
-        plt.legend(loc=legend_loc)
-        if xlim:
-            plt.xlim(xlim)
-        if ylim:
-            plt.ylim(ylim)
-        if save_path:
-            plt.savefig(save_path, dpi=dpi)
-        plt.show()
 
 
 
