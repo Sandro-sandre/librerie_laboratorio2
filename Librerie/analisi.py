@@ -157,8 +157,9 @@ def plot_fit(
             
             _ , cov_y = propagate(f_wrapped, result['parameters'], result['covariance'])
             sigma_fit = np.sqrt(np.diag(cov_y))
-            sigma_residuo = np.sqrt(np.sum(result['residuals']) / (len(x) - len(result['parameters'])))
+            sigma_residuo = np.sqrt(np.sum(result['residuals']**2)/ (len(x) - len(result['parameters'])))
             sigma_pred = np.sqrt(sigma_fit**2 + sigma_residuo**2)
+            
 
             ax1.fill_between(
                 fit_x,
