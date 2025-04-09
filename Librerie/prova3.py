@@ -1,7 +1,7 @@
 import analisi as lib
 import numpy as np
 import matplotlib.pyplot as plt
-
+ #verifico prediction band che è grande maggiore il chi quadro
 def VR_sovrasmorzato(t,V0,gamma,beta):
     return V0 * np.exp(-gamma*t) * (np.exp(beta*t) - np.exp(-beta*t))
 
