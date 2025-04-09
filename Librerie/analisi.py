@@ -120,7 +120,10 @@ def plot_fit(
     axis_fontsize: int = 12,
     title_fontsize: int = 14,
     parameter_names: Optional[List[str]] = None,
-    method: str = 'auto'
+    method: str = 'auto',
+    confidence_intervals: bool = False,
+    prediction_band: bool = False,
+    error_band: int = 1
 ):
     result = fit(x, y, func, xerr=xerr, yerr=yerr, p0=p0, method=method, parameter_names=parameter_names)
 
@@ -133,6 +136,38 @@ def plot_fit(
 
     if fit_line:
         ax1.plot(fit_x, fit_y, color='red', linewidth=linewidth, label='Fit')
+        if confidence_intervals:
+            def f_wrapped(p):
+                return func(fit_x, *p)
+    
+            _ , cov_y = propagate(f_wrapped, result['parameters'], result['covariance'])
+            sigma_y = np.sqrt(np.diag(cov_y))
+
+            ax1.fill_between(
+                fit_x,
+                fit_y - error_band * sigma_y,
+                fit_y + error_band * sigma_y,
+                color='red',
+                alpha=0.2,
+                label=f"Banda {error_band}σ"
+            )
+        if prediction_band:
+            def f_wrapped(p):
+                return func(fit_x, *p)
+            
+            _ , cov_y = propagate(f_wrapped, result['parameters'], result['covariance'])
+            sigma_fit = np.sqrt(np.diag(cov_y))
+            sigma_residuo = np.sqrt(np.sum(result['residuals']) / (len(x) - len(result['parameters'])))
+            sigma_pred = np.sqrt(sigma_fit**2 + sigma_residuo**2)
+
+            ax1.fill_between(
+                fit_x,
+                fit_y - error_band * sigma_pred,
+                fit_y + error_band * sigma_pred,
+                color='green',
+                alpha=0.2,
+                label=f'Prediction band ({error_band}σ)'
+            )
 
 
     # Calcolo gradi di libertà e p-value
@@ -174,12 +209,12 @@ def plot_fit(
         ax2.grid(grid)
         if save_path:
             fig_res.savefig(f"{save_path}_residui.png", dpi=dpi)
-        plt.show()
+        
 
     if save_path:
         fig.savefig(f"{save_path}.png", dpi=dpi)
 
-    plt.show()
+    
 
 
 

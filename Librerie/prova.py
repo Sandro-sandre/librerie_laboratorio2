@@ -24,7 +24,8 @@ ddp_RC = np.array([3.94, 3.76, 3.58, 3.26, 2.90, 2.66, 2.56, 2.16,  2.02, 1.90, 
 sigma_ddp_RC = (2*np.ones(len(ddp_RC))*0.05)/np.sqrt(12)
 
 result = lib.fit(t_RC, ddp_RC, VR_C_charge, yerr=sigma_ddp_RC, p0=[1,1], parameter_names=['tau', 'V_0'])
-print(result)
-print(result['residuals'])
+print(result['parameters'])
+print(result['covariance'])
 
-lib.plot_fit(t_RC, ddp_RC, yerr = sigma_ddp_RC, func = VR_C_charge, p0= [1,1], xlabel = 'tempo(s)',ylabel = 'volt', title= 'Fit carica RC' , residuals = True, parameter_names=['tau', 'V_0'], show_fit_params=True, show_chi_squared=True)
+lib.plot_fit(t_RC, ddp_RC, yerr = sigma_ddp_RC, func = VR_C_charge, p0= [1,1], xlabel = 'tempo(s)',ylabel = 'volt', title= 'Fit carica RC' , residuals = True, parameter_names=['tau', 'V_0'], show_fit_params=True, show_chi_squared=True, prediction_band=True, error_band=1)
+plt.show()
