@@ -236,9 +236,13 @@ def integral_scipy(f, a, b) :
 
 #----------media pesata----------------
 def media_pesata(x, sigma) :
-  m = np.sum(x/sigma**2)/np.sum(1/sigma**2)
-  sigma_m = 1/np.sqrt(np.sum(1/sigma**2))
-  return m, sigma_m
+    x = np.array(x)
+    sigma = np.array(sigma)
+    
+    pesi = 1 / sigma**2
+    m = np.sum(x * pesi) / np.sum(pesi)
+    sigma_m = 1 / np.sqrt(np.sum(pesi))
+    return m, sigma_m
 
 
 
