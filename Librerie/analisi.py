@@ -186,7 +186,11 @@ def plot_fit(
         for i, val in enumerate(result['parameters']):
             err = np.sqrt(result['covariance'][i][i]) if result['covariance'] is not None else 0
             name = parameter_names[i] if parameter_names else f"p{i}"
-            fit_info.append(f"{name} = ${val:.3f} \\pm {err:.3f}$")
+            if abs(val) < 1e-3 or abs(val) >= 1e+3:
+                fit_info.append(f"{name} = ${val:.3e} \\pm {err:.3e}$")
+            else:
+                fit_info.append(f"{name} = ${val:.3f} \\pm {err:.3f}$")
+            
 
     ax1.legend(title="\n".join(fit_info), frameon=False, loc=legend_loc)
 
