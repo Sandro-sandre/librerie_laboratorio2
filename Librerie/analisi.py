@@ -10,6 +10,7 @@ from scipy.stats import chi2, t, norm
 from jacobi import propagate
 
 
+#zucca
 
 #------------propagazione errore----------------
 '''
